@@ -3,7 +3,7 @@
   "name": "State Mover",
   "version": "1.2.0",
   "description": "Copy selected localStorage and sessionStorage keys out of one page and apply them to another.",
-  "homepage_url": "https://animeshsinghweb.github.io/StateMover/",
+  "homepage_url": "https://animeshsingh.in/StateMover/",
   "permissions": [
     "activeTab",
     "scripting",
@@ -30,7 +30,7 @@
   },
   "browser_specific_settings": {
     "gecko": {
-      "id": "state-mover@animeshsinghweb.github.io",
+      "id": "state-mover@animeshsingh.in",
       "strict_min_version": "142.0",
       "data_collection_permissions": {
         "required": [

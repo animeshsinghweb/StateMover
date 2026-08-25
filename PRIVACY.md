@@ -1,7 +1,7 @@
 # Privacy Policy
 
 > The canonical, always-current version lives at
-> <https://animeshsinghweb.github.io/StateMover/privacy.html>.
+> <https://animeshsingh.in/StateMover/privacy.html>.
 
 **State Mover** does not collect, transmit, sell, or share any data.
 
