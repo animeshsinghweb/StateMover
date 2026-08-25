@@ -32,6 +32,18 @@ This writes to `dist/`:
 - `state-mover-<version>-firefox.zip` → Firefox
 - `state-mover-<version>-source.zip` → Firefox source-code archive
 
+Then validate before you upload anything. Mozilla's linter catches manifest
+mistakes that every store cares about, not just Firefox:
+
+```bash
+unzip -q dist/state-mover-*-firefox.zip -d /tmp/sm-ff && npx web-ext lint --source-dir /tmp/sm-ff
+```
+
+The Firefox package should come back with zero errors, warnings and notices.
+Running it against the Chromium package will report a missing add-on ID and
+missing `data_collection_permissions` - both are Firefox-only requirements, and
+both are exactly why there is a separate `manifest.firefox.json`.
+
 ---
 
 ## 1. Chrome Web Store
@@ -83,7 +95,7 @@ behaviour*, so keep the listing literal.
 2. **Submit a New Add-on** → *On this site* (listed) → upload `state-mover-<version>-firefox.zip`.
 3. The Firefox package is not interchangeable with the Chromium one. It carries `manifest.firefox.json`, which adds:
    - `browser_specific_settings.gecko.id` - required for MV3 signing
-   - `strict_min_version: "115.0"`
+   - `strict_min_version: "142.0"` - the floor for Mozilla's data-consent manifest key
    - `data_collection_permissions: { "required": ["none"] }` - **mandatory** for all new extensions submitted since 3 November 2025. Omitting it fails validation.
 4. Upload `state-mover-<version>-source.zip` when asked for source code. AMO requires a source archive for anything a reviewer cannot read directly; State Mover ships unminified source, so this is quick, but supplying it avoids a round-trip.
 5. Fill in the listing, set the category to **Other** or **Web Development**, and link the privacy policy.

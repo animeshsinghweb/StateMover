@@ -52,7 +52,7 @@ Then load the unpacked extension:
 | Chrome / Brave / Vivaldi | `chrome://extensions` → enable **Developer mode** → **Load unpacked** → select the repo folder |
 | Edge | `edge://extensions` → enable **Developer mode** → **Load unpacked** → select the repo folder |
 | Opera | `opera://extensions` → enable **Developer mode** → **Load unpacked** → select the repo folder |
-| Firefox | `about:debugging#/runtime/this-firefox` → **Load Temporary Add-on** → select `dist/state-mover-<version>-firefox.zip` |
+| Firefox 142+ | `about:debugging#/runtime/this-firefox` → **Load Temporary Add-on** → select `dist/state-mover-<version>-firefox.zip` |
 
 Chromium browsers read the repo's `manifest.json` directly, so you can skip the
 build step and point them at the folder as-is. Firefox needs the packaged zip
@@ -113,6 +113,14 @@ Produces three archives in `dist/`:
 - `state-mover-<version>-chromium.zip` - Chrome, Edge, Brave, Opera, Vivaldi
 - `state-mover-<version>-firefox.zip` - Firefox
 - `state-mover-<version>-source.zip` - source archive for the Firefox add-on review
+
+To check the packages against Mozilla's add-on validator before submitting
+anywhere:
+
+```bash
+unzip -q dist/state-mover-*-firefox.zip -d /tmp/sm-ff
+npx web-ext lint --source-dir /tmp/sm-ff
+```
 
 To regenerate the icons after editing `assets/logo.svg`:
 

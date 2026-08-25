@@ -427,7 +427,7 @@ async function init() {
 
     if (!tab.url || BLOCKED_URL.test(tab.url)) {
         ui.origin.textContent = "unavailable";
-        fatal("State Mover cannot read browser-internal or extension-store pages. Open a regular http(s) site and try again.");
+        fatal("State Mover can only read http and https pages. Browser-internal pages, add-on stores and local files are off limits to every extension.");
         return;
     }
 
