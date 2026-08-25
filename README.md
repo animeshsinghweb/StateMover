@@ -60,8 +60,8 @@ because it uses `manifest.firefox.json`.
 
 ### From a store
 
-See [PUBLISHING.md](PUBLISHING.md) for the submission status and process for each
-store.
+Not listed yet. Until then, build from source above, or grab a package from the
+[latest release](https://github.com/animeshsinghweb/StateMover/releases/latest).
 
 ## How it works
 
