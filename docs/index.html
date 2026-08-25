@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>State Mover - move localStorage between environments</title>
+<meta name="description" content="A browser extension that copies selected localStorage and sessionStorage keys out of one page and applies them to another. No account, no server, no network calls.">
+<link rel="canonical" href="https://animeshsinghweb.github.io/StateMover/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="State Mover">
+<meta property="og:description" content="Copy selected localStorage and sessionStorage keys out of one page and apply them to another.">
+<meta property="og:url" content="https://animeshsinghweb.github.io/StateMover/">
+<meta property="og:image" content="https://animeshsinghweb.github.io/StateMover/assets/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="site-header">
+    <div class="wrap">
+        <a class="brand" href="./"><img src="assets/logo.svg" alt="">State Mover</a>
+        <nav class="site-nav">
+            <a href="#features">Features</a>
+            <a href="#install">Install</a>
+            <a href="guide.html">Guide</a>
+            <a href="privacy.html">Privacy</a>
+            <a href="https://github.com/animeshsinghweb/StateMover">GitHub</a>
+        </nav>
+    </div>
+</header>
+
+<main>
+
+<div class="hero wrap">
+    <h1>Move <em>localStorage</em><br>between environments.</h1>
+    <p class="lede">
+        Pick the keys that matter, copy them as a JSON snapshot, paste them into
+        another origin. Signing in again on every environment gets old.
+    </p>
+    <div class="hero-actions">
+        <a class="btn btn-primary" href="#install">Install</a>
+        <a class="btn" href="guide.html">Read the guide</a>
+        <a class="btn" href="https://github.com/animeshsinghweb/StateMover">Source on GitHub</a>
+    </div>
+    <p class="hero-note">Free and MIT licensed. Chrome, Edge, Brave, Opera, Vivaldi and Firefox.</p>
+    <img class="hero-shot" src="assets/hero.png" width="1000" height="760"
+         alt="The State Mover popup on a demo app: a localStorage tab with nine keys listed by name and size, three ticked, above Export and Import sections.">
+</div>
+
+<section id="features">
+    <div class="wrap">
+        <h2>What it does</h2>
+        <p class="section-lede">
+            One job: lift the exact keys you need off a page where they already
+            exist, and drop them onto the page where you need them.
+        </p>
+        <div class="grid">
+            <div class="card">
+                <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M3 12h18M3 18h12"/></svg></div>
+                <h3>Every key, listed</h3>
+                <p>Both storages on the active tab, sorted, sized and filterable. No more typing key names from memory.</p>
+            </div>
+            <div class="card">
+                <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg></div>
+                <h3>Peek before you copy</h3>
+                <p>Expand any key to see its value, pretty-printed when it is JSON. Check you grabbed the right token.</p>
+            </div>
+            <div class="card">
+                <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg></div>
+                <h3>Remembers the origin</h3>
+                <p>Keys you tick on one host stay ticked next time you open the popup there. Nothing to save by hand.</p>
+            </div>
+            <div class="card">
+                <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg></div>
+                <h3>Clipboard or file</h3>
+                <p>Copy a snapshot, or save it as a timestamped <code>.json</code> you can commit, share or keep for later.</p>
+            </div>
+            <div class="card">
+                <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/></svg></div>
+                <h3>Reads only what you pick</h3>
+                <p>Opening the popup fetches key names and sizes. Values load only when you expand a row or export.</p>
+            </div>
+            <div class="card">
+                <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64A9 9 0 1 1 5.64 6.64"/><path d="M12 2v10"/></svg></div>
+                <h3>No network, at all</h3>
+                <p>No server, no analytics, no host permissions. The extension cannot make a request even if it wanted to.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="how">
+    <div class="wrap">
+        <h2>How it works</h2>
+        <p class="section-lede">Four steps, about ten seconds.</p>
+        <ol class="steps">
+            <li><div><strong>Open the source tab</strong><p>Go to the page whose storage you want, and click the State Mover icon.</p></div></li>
+            <li><div><strong>Tick the keys</strong><p>Filter if the list is long, and switch between the localStorage and sessionStorage tabs.</p></div></li>
+            <li><div><strong>Copy the snapshot</strong><p>Or download it as JSON if you want to keep it around.</p></div></li>
+            <li><div><strong>Apply it on the target</strong><p>Open the other tab, paste, and hit Apply. Tick the reload box and the page refreshes itself.</p></div></li>
+        </ol>
+        <p style="margin-top:28px"><a href="guide.html">Read the full guide</a>, including the snapshot format and what to do when a page blocks extensions.</p>
+    </div>
+</section>
+
+<section id="privacy-teaser">
+    <div class="wrap">
+        <h2>Your data stays on your machine</h2>
+        <p class="section-lede">
+            State Mover has no backend. There is nothing to sign up for, nothing
+            is uploaded, and there is no analytics or telemetry of any kind.
+        </p>
+        <div class="table-scroll">
+            <table>
+                <thead><tr><th>Permission</th><th>Why it is there</th></tr></thead>
+                <tbody>
+                    <tr><td><code>activeTab</code></td><td>Access to the current tab only, only while the popup is open, only after you click the toolbar icon.</td></tr>
+                    <tr><td><code>scripting</code></td><td>Runs the small read/write snippet in that tab.</td></tr>
+                    <tr><td><code>storage</code></td><td>Remembers which keys you ticked, per origin, locally.</td></tr>
+                    <tr><td><code>clipboardWrite</code></td><td>Puts the snapshot on your clipboard.</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <p>There is no host permission and no background service worker. Full detail in the <a href="privacy.html">privacy policy</a>.</p>
+    </div>
+</section>
+
+<section id="install">
+    <div class="wrap">
+        <h2>Install</h2>
+        <p class="section-lede">
+            Not on the extension stores yet. Until it is, build from source. It
+            takes one command and there is no toolchain to install.
+        </p>
+
+        <pre><code>git clone https://github.com/animeshsinghweb/StateMover.git
+cd StateMover
+./scripts/build.sh</code></pre>
+
+        <p>That writes two ready-to-load folders: <code>dist/chromium/</code> and <code>dist/firefox/</code>.</p>
+
+        <div class="callout">
+            <p><strong>Load unpacked wants a folder, not a zip.</strong> The
+            <code>.zip</code> files next to those folders are for uploading to the
+            stores. If your file picker greys them out, that is why. Select the
+            folder instead.</p>
+        </div>
+
+        <div class="table-scroll">
+            <table>
+                <thead><tr><th>Browser</th><th>Steps</th></tr></thead>
+                <tbody>
+                    <tr><td>Chrome, Brave, Vivaldi</td><td><code>chrome://extensions</code> &rarr; enable <strong>Developer mode</strong> &rarr; <strong>Load unpacked</strong> &rarr; pick <code>dist/chromium</code></td></tr>
+                    <tr><td>Edge</td><td><code>edge://extensions</code> &rarr; enable <strong>Developer mode</strong> &rarr; <strong>Load unpacked</strong> &rarr; pick <code>dist/chromium</code></td></tr>
+                    <tr><td>Opera</td><td><code>opera://extensions</code> &rarr; enable <strong>Developer mode</strong> &rarr; <strong>Load unpacked</strong> &rarr; pick <code>dist/chromium</code></td></tr>
+                    <tr><td>Firefox 142+</td><td><code>about:debugging#/runtime/this-firefox</code> &rarr; <strong>Load Temporary Add-on</strong> &rarr; pick <code>dist/firefox/manifest.json</code></td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <p>
+            Prefer not to build? Grab a package from the
+            <a href="https://github.com/animeshsinghweb/StateMover/releases/latest">latest release</a>.
+            Firefox unloads temporary add-ons when you close the browser; Chromium
+            browsers keep an unpacked extension until you remove it.
+        </p>
+    </div>
+</section>
+
+</main>
+
+<footer class="site-footer">
+    <div class="wrap">
+        <span>State Mover &middot; MIT licensed</span>
+        <nav class="footer-links">
+            <a href="guide.html">Guide</a>
+            <a href="privacy.html">Privacy</a>
+            <a href="terms.html">Terms</a>
+            <a href="license.html">License</a>
+            <a href="https://github.com/animeshsinghweb/StateMover">GitHub</a>
+            <a href="https://github.com/animeshsinghweb/StateMover/issues">Support</a>
+        </nav>
+    </div>
+</footer>
+
+</body>
+</html>

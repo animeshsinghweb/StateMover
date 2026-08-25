@@ -3,7 +3,7 @@
   "name": "State Mover",
   "version": "1.2.0",
   "description": "Copy selected localStorage and sessionStorage keys out of one page and apply them to another.",
-  "homepage_url": "https://github.com/animeshsinghweb/StateMover",
+  "homepage_url": "https://animeshsinghweb.github.io/StateMover/",
   "permissions": [
     "activeTab",
     "scripting",

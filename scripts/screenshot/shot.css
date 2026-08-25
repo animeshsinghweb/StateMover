@@ -1,0 +1,140 @@
+:root {
+    --ink: #14121f;
+    --muted: #5c5870;
+    --grad-a: #4F46E5;
+    --grad-b: #9333EA;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: #ffffff;
+    -webkit-font-smoothing: antialiased;
+}
+.stage {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 64px;
+    width: 100%;
+    height: 100vh;
+    padding: 0 80px;
+    overflow: hidden;
+    background:
+        radial-gradient(1100px 620px at 12% -10%, #ece9ff 0%, rgba(236,233,255,0) 62%),
+        radial-gradient(900px 560px at 108% 112%, #f6e6ff 0%, rgba(246,230,255,0) 60%),
+        #fbfaff;
+}
+.stage::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image:
+        linear-gradient(rgba(79,70,229,.055) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(79,70,229,.055) 1px, transparent 1px);
+    background-size: 46px 46px;
+    mask-image: radial-gradient(circle at 50% 40%, #000 30%, transparent 78%);
+    pointer-events: none;
+}
+.copy { position: relative; z-index: 1; flex: 1; max-width: 560px; }
+
+/* Bare mode: the product shot on its own, for the site hero where the page
+   already carries the headline. */
+.stage.bare { justify-content: center; padding: 0; }
+.stage.bare .copy { display: none; }
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    padding: 7px 14px 7px 8px;
+    margin-bottom: 26px;
+    border-radius: 999px;
+    background: #ffffff;
+    box-shadow: 0 2px 10px rgb(30 20 80 / .09);
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--ink);
+}
+.badge img { width: 26px; height: 26px; border-radius: 7px; display: block; }
+.copy h1 {
+    margin: 0 0 18px;
+    font-size: 52px;
+    line-height: 1.08;
+    letter-spacing: -0.028em;
+    color: var(--ink);
+    font-weight: 700;
+}
+.copy h1 em {
+    font-style: normal;
+    background: linear-gradient(96deg, var(--grad-a), var(--grad-b));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+.copy p {
+    margin: 0 0 26px;
+    font-size: 20px;
+    line-height: 1.55;
+    color: var(--muted);
+}
+.points { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.points li {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    font-size: 17px;
+    color: var(--ink);
+}
+.points li::before {
+    content: "";
+    flex: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 999px;
+    background: linear-gradient(140deg, var(--grad-a), var(--grad-b));
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='%23000' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round' d='M20 6 9 17l-5-5'/%3E%3C/svg%3E") center/16px no-repeat;
+            mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='%23000' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round' d='M20 6 9 17l-5-5'/%3E%3C/svg%3E") center/16px no-repeat;
+}
+
+/* Browser frame around the real popup */
+.shot { position: relative; z-index: 1; flex: none; }
+.frame {
+    width: 380px;
+    border-radius: 15px;
+    background: #ffffff;
+    box-shadow: 0 32px 70px -18px rgb(28 18 70 / .34), 0 5px 18px rgb(28 18 70 / .1);
+    overflow: hidden;
+}
+.frame-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 40px;
+    padding: 0 14px;
+    background: #f2f1f7;
+    border-bottom: 1px solid #e4e2ee;
+}
+.dot { width: 11px; height: 11px; border-radius: 999px; }
+.dot.r { background: #ff5f57; } .dot.y { background: #febc2e; } .dot.g { background: #28c840; }
+.frame-url {
+    flex: 1;
+    margin-left: 10px;
+    padding: 5px 12px;
+    border-radius: 999px;
+    background: #ffffff;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 11.5px;
+    color: #6f6b83;
+}
+.frame iframe { display: block; width: 380px; height: 648px; border: 0; }
+
+/* Short canvases - the OG card - need the whole popup to still fit. */
+@media (max-height: 700px) {
+    .stage { gap: 48px; padding: 0 64px; }
+    .copy h1 { font-size: 46px; margin-bottom: 15px; }
+    .copy p { font-size: 18px; margin-bottom: 22px; }
+    .badge { margin-bottom: 20px; }
+    .points { gap: 10px; }
+    .points li { font-size: 16px; }
+    .frame iframe { height: 500px; }
+}

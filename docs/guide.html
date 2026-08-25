@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Guide - State Mover</title>
+<meta name="description" content="How to install State Mover, pick keys, export a snapshot, import it on another origin, and what to do when something does not work.">
+<link rel="canonical" href="https://animeshsinghweb.github.io/StateMover/guide.html">
+<meta property="og:title" content="State Mover guide">
+<meta property="og:description" content="Install, pick keys, export, import, and troubleshoot.">
+<meta property="og:image" content="https://animeshsinghweb.github.io/StateMover/assets/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="site-header">
+    <div class="wrap">
+        <a class="brand" href="./"><img src="assets/logo.svg" alt="">State Mover</a>
+        <nav class="site-nav">
+            <a href="./#features">Features</a>
+            <a href="./#install">Install</a>
+            <a href="guide.html" aria-current="page">Guide</a>
+            <a href="privacy.html">Privacy</a>
+            <a href="https://github.com/animeshsinghweb/StateMover">GitHub</a>
+        </nav>
+    </div>
+</header>
+
+<main class="doc">
+<div class="wrap">
+
+<h1>Guide</h1>
+<p class="updated">Everything State Mover does, in the order you will meet it.</p>
+
+<nav class="toc">
+    <strong>On this page</strong>
+    <ol>
+        <li><a href="#install">Install it</a></li>
+        <li><a href="#first-run">First run</a></li>
+        <li><a href="#picking">Picking keys</a></li>
+        <li><a href="#preview">Previewing a value</a></li>
+        <li><a href="#export">Exporting</a></li>
+        <li><a href="#import">Importing</a></li>
+        <li><a href="#format">The snapshot format</a></li>
+        <li><a href="#troubleshooting">When something does not work</a></li>
+        <li><a href="#safety">A word on tokens</a></li>
+    </ol>
+</nav>
+
+<section id="install">
+<h2>1. Install it</h2>
+
+<p>State Mover is not on the extension stores yet, so you build it from source. There is no toolchain, no dependencies and no bundler.</p>
+
+<pre><code>git clone https://github.com/animeshsinghweb/StateMover.git
+cd StateMover
+./scripts/build.sh</code></pre>
+
+<p>That writes two ready-to-load folders into <code>dist/</code>:</p>
+
+<ul>
+    <li><code>dist/chromium/</code> for Chrome, Edge, Brave, Opera and Vivaldi</li>
+    <li><code>dist/firefox/</code> for Firefox 142 and later</li>
+</ul>
+
+<div class="callout">
+<p><strong>Load unpacked takes a folder.</strong> The zips sitting next to those
+folders are for uploading to the stores, and no browser will accept one here. If
+the file picker greys them out, that is the reason.</p>
+</div>
+
+<div class="table-scroll">
+<table>
+    <thead><tr><th>Browser</th><th>Steps</th></tr></thead>
+    <tbody>
+        <tr><td>Chrome, Brave, Vivaldi</td><td><code>chrome://extensions</code> &rarr; <strong>Developer mode</strong> on &rarr; <strong>Load unpacked</strong> &rarr; <code>dist/chromium</code></td></tr>
+        <tr><td>Edge</td><td><code>edge://extensions</code> &rarr; <strong>Developer mode</strong> on &rarr; <strong>Load unpacked</strong> &rarr; <code>dist/chromium</code></td></tr>
+        <tr><td>Opera</td><td><code>opera://extensions</code> &rarr; <strong>Developer mode</strong> on &rarr; <strong>Load unpacked</strong> &rarr; <code>dist/chromium</code></td></tr>
+        <tr><td>Firefox 142+</td><td><code>about:debugging#/runtime/this-firefox</code> &rarr; <strong>Load Temporary Add-on</strong> &rarr; <code>dist/firefox/manifest.json</code></td></tr>
+    </tbody>
+</table>
+</div>
+
+<p>Firefox's picker is a file picker rather than a folder picker, which is why you point it at the manifest inside the folder. Firefox also drops temporary add-ons when you close the browser; Chromium browsers keep an unpacked extension until you remove it.</p>
+
+<p>Chromium browsers can also load the repository root directly, since <code>manifest.json</code> sits at the top level. Firefox cannot, because it needs <code>manifest.firefox.json</code> renamed into place, which is what the build step does.</p>
+</section>
+
+<section id="first-run">
+<h2>2. First run</h2>
+
+<p>Open a normal <code>http</code> or <code>https</code> page and click the State Mover icon. The popup shows the page's origin under the title, so you always know which site you are about to read or write.</p>
+
+<p>You will see two tabs, <strong>localStorage</strong> and <strong>sessionStorage</strong>, each with a count of how many keys the page has. On a fresh install nothing is ticked.</p>
+
+<img src="assets/popup.png" width="420" height="640" alt="The State Mover popup showing the localStorage tab with a filter box, a scrollable list of keys with checkboxes and byte sizes, and Export and Import sections below." style="border:1px solid var(--border);border-radius:12px;margin:24px 0">
+</section>
+
+<section id="picking">
+<h2>3. Picking keys</h2>
+
+<p>Tick the keys you want. The list is sorted alphabetically and shows each value's size in bytes, so a heavyweight key is obvious at a glance.</p>
+
+<ul>
+    <li><strong>Filter</strong> narrows the list as you type. Handy on pages with a hundred keys, which is more common than you would think.</li>
+    <li><strong>All</strong> ticks everything currently visible. With a filter active it ticks only the matches, so <code>auth</code> then <strong>All</strong> grabs every auth key and nothing else.</li>
+    <li><strong>None</strong> clears the current tab's selection.</li>
+</ul>
+
+<p>The running total under the list tells you how many keys are selected across both tabs and how large the snapshot will be.</p>
+
+<p>Your selection is saved automatically, per origin. Tick three keys on <code>app.staging.example.com</code> and they will still be ticked next time you open the popup there, without affecting what you picked on production.</p>
+</section>
+
+<section id="preview">
+<h2>4. Previewing a value</h2>
+
+<p>Click the <strong>&#9654;</strong> at the right of any row to expand it. The value appears underneath, pretty-printed if it parses as JSON and shown verbatim otherwise.</p>
+
+<p>Values are fetched only at that moment. Opening the popup reads key names and sizes and nothing else, which keeps things quick on pages holding megabytes of state.</p>
+</section>
+
+<section id="export">
+<h2>5. Exporting</h2>
+
+<p>With at least one key ticked, both export buttons light up.</p>
+
+<ul>
+    <li><strong>Copy snapshot</strong> puts the JSON on your clipboard and tells you how large it was.</li>
+    <li><strong>Download .json</strong> saves it as <code>state-mover-&lt;host&gt;-&lt;timestamp&gt;.json</code>, which is useful when you want to keep a known-good state around rather than paste it straight away.</li>
+</ul>
+</section>
+
+<section id="import">
+<h2>6. Importing</h2>
+
+<p>Switch to the target tab and open the popup there. Paste the snapshot into the import box, or use <strong>Load file...</strong> to pick a downloaded <code>.json</code>.</p>
+
+<p><strong>Apply snapshot</strong> writes the values. With <strong>Reload the page after import</strong> ticked, which it is by default, the tab refreshes so the app picks up the new state immediately. Untick it if you would rather reload yourself, or if you want to import into several storages before refreshing.</p>
+
+<div class="callout">
+<p>Import writes whatever the snapshot contains. It does not clear anything first,
+so existing keys not present in the snapshot are left alone, and keys that are
+present get overwritten.</p>
+</div>
+</section>
+
+<section id="format">
+<h2>7. The snapshot format</h2>
+
+<p>A snapshot is plain JSON, readable and editable by hand:</p>
+
+<pre><code>{
+  "__localStorageTransfer__": true,
+  "version": 2,
+  "origin": "https://app.example.com",
+  "exportedAt": "2026-08-25T10:15:00.000Z",
+  "local":   { "currentUser": "{\"id\":42}" },
+  "session": { "tempState": "{\"step\":3}" }
+}</code></pre>
+
+<p>Values are strings, because that is exactly how the browser stores them. A JSON object living in localStorage arrives as an escaped string, which is correct and what the app on the other side expects to parse.</p>
+
+<p>The <code>origin</code> and <code>exportedAt</code> fields are informational. Nothing stops you applying a snapshot to a different origin, which is the entire point.</p>
+
+<p>Snapshots written by version 1.1, which put localStorage values in a flat <code>data</code> field, still import correctly.</p>
+</section>
+
+<section id="troubleshooting">
+<h2>8. When something does not work</h2>
+
+<h3>"State Mover can only read http and https pages"</h3>
+<p>You are on a page no extension may touch: <code>chrome://</code>, <code>edge://</code>, <code>about:</code>, an add-on store, or a local file. This is a browser rule, not a State Mover limitation. Open a regular site.</p>
+
+<h3>The key list is empty</h3>
+<p>The page genuinely has no keys in that storage, or it was still loading when you opened the popup. Close and reopen the popup to re-read.</p>
+
+<h3>"Storage quota exceeded"</h3>
+<p>The target origin is at its storage limit, usually around 5 MB per origin. Clear some keys on the target and apply again.</p>
+
+<h3>The app still shows the old state after import</h3>
+<p>Reload the page. If you unticked the reload option, nothing has told the app that storage changed. Some apps also cache state in memory at startup, in which case a hard reload helps.</p>
+
+<h3>Nothing happens on a page you control</h3>
+<p>A few sites block storage access from injected scripts through their content security policy or a sandboxed context. State Mover reports what it can, but it cannot get around a page that refuses to hand over its storage.</p>
+</section>
+
+<section id="safety">
+<h2>9. A word on tokens</h2>
+
+<p>Session tokens are the most useful thing to move and the most sensitive. A snapshot containing one is, for practical purposes, a copy of that session.</p>
+
+<ul>
+    <li>Treat a downloaded snapshot the way you would treat a password. Do not commit one to a repository or paste it into a shared channel.</li>
+    <li>Applying a production token to a local build gives that build production access. That is often exactly what you want, and occasionally exactly what you do not.</li>
+    <li>Clear the import box when you are done if you are screen sharing.</li>
+</ul>
+
+<p>State Mover never transmits any of this. Where a snapshot goes after it reaches your clipboard is entirely up to you.</p>
+</section>
+
+</div>
+</main>
+
+<footer class="site-footer">
+    <div class="wrap">
+        <span>State Mover &middot; MIT licensed</span>
+        <nav class="footer-links">
+            <a href="guide.html">Guide</a>
+            <a href="privacy.html">Privacy</a>
+            <a href="terms.html">Terms</a>
+            <a href="license.html">License</a>
+            <a href="https://github.com/animeshsinghweb/StateMover">GitHub</a>
+            <a href="https://github.com/animeshsinghweb/StateMover/issues">Support</a>
+        </nav>
+    </div>
+</footer>
+
+</body>
+</html>

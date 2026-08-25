@@ -34,7 +34,7 @@ pack chromium manifest.json
 pack firefox manifest.firefox.json
 
 zip -qr "$DIST/state-mover-$VERSION-source.zip" \
-  assets icons scripts src manifest.json manifest.firefox.json \
+  assets docs icons scripts src manifest.json manifest.firefox.json \
   README.md LICENSE PRIVACY.md CHANGELOG.md \
   -x '.DS_Store' '*/.DS_Store'
 

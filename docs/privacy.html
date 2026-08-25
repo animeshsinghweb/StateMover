@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Privacy Policy - State Mover</title>
+<meta name="description" content="State Mover collects, transmits, sells and shares no data. It has no server, no analytics and no network access.">
+<link rel="canonical" href="https://animeshsinghweb.github.io/StateMover/privacy.html">
+<meta property="og:title" content="State Mover - Privacy Policy">
+<meta property="og:description" content="State Mover collects, transmits, sells and shares no data. It has no server, no analytics and no network access.">
+<meta property="og:image" content="https://animeshsinghweb.github.io/StateMover/assets/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="site-header">
+    <div class="wrap">
+        <a class="brand" href="./"><img src="assets/logo.svg" alt="">State Mover</a>
+        <nav class="site-nav">
+            <a href="./#features">Features</a>
+            <a href="./#install">Install</a>
+            <a href="guide.html">Guide</a>
+            <a href="privacy.html" aria-current="page">Privacy</a>
+            <a href="https://github.com/animeshsinghweb/StateMover">GitHub</a>
+        </nav>
+    </div>
+</header>
+
+<main class="doc">
+<div class="wrap">
+<h1>Privacy Policy</h1>
+<p class="updated">Last updated 25 August 2026</p>
+
+<div class="callout">
+<p><strong>The short version.</strong> State Mover collects nothing, transmits
+nothing, and has no way to reach the internet. There is no server behind it, no
+analytics, no telemetry, no advertising and no third party of any kind.</p>
+</div>
+
+<h2>Who this covers</h2>
+<p>This policy applies to the State Mover browser extension for Chrome, Edge, Brave, Opera, Vivaldi and Firefox, and to this website. "We" and "us" mean the extension's author, an individual developer.</p>
+
+<h2>What the extension reads</h2>
+<p>When you open the popup, State Mover reads the <code>localStorage</code> and <code>sessionStorage</code> <strong>key names and sizes</strong> of the tab you are looking at, so it can list them for you.</p>
+<p>It reads a key's <strong>value</strong> only in two situations:</p>
+<ul>
+    <li>you expand that key to preview it, or</li>
+    <li>you export a snapshot that includes it.</li>
+</ul>
+<p>All of this happens inside your browser. Nothing is sent anywhere.</p>
+
+<h2>What the extension stores</h2>
+<p>Exactly one thing, in your browser's own extension storage: the list of key names you ticked, grouped by site origin, so your selection is still there next time you open the popup on that site.</p>
+<p>This record contains <strong>key names only, never values</strong>. It never leaves your browser. You can erase it at any time by removing the extension.</p>
+
+<h2>What the extension sends</h2>
+<p>Nothing. State Mover declares no host permissions, ships no background service worker, loads no remote code and makes no network requests. There is no endpoint for it to talk to.</p>
+<p>Exported snapshots go to your clipboard, or to a file you chose to download. Where they go after that is entirely your decision and outside our control or knowledge.</p>
+
+<h2>Permissions, and why each exists</h2>
+<div class="table-scroll">
+<table>
+    <thead><tr><th>Permission</th><th>Purpose</th></tr></thead>
+    <tbody>
+        <tr><td><code>activeTab</code></td><td>Temporary access to the tab you are on, granted by the browser only when you click the toolbar icon, and revoked afterwards.</td></tr>
+        <tr><td><code>scripting</code></td><td>Runs the small read/write snippet in that tab. It touches only the keys you selected.</td></tr>
+        <tr><td><code>storage</code></td><td>Saves your per-origin key selection locally.</td></tr>
+        <tr><td><code>clipboardWrite</code></td><td>Copies a snapshot to your clipboard when you press the button.</td></tr>
+    </tbody>
+</table>
+</div>
+<p>Notably absent: no <code>host_permissions</code>, no <code>tabs</code>, no <code>webRequest</code>, no <code>clipboardRead</code>, no <code>downloads</code>. State Mover cannot watch your browsing, read your clipboard, or see any page you have not explicitly pointed it at.</p>
+
+<h2>Sensitive data</h2>
+<p>Storage keys often hold session tokens and user profiles. State Mover treats them as opaque strings and never inspects, classifies, retains or transmits them. It has no concept of what any value means.</p>
+<p>Because a snapshot can contain a session token, treat a downloaded snapshot as you would a password. Guidance on this is in the <a href="guide.html#safety">guide</a>.</p>
+
+<h2>Children</h2>
+<p>State Mover is a developer tool, is not directed at children, and knowingly collects no information from anyone, including children.</p>
+
+<h2>Data sharing and sale</h2>
+<p>We do not sell, rent, trade or transfer any data to anyone, for any purpose. There is no data to sell. This includes the specific commitments the extension stores require: no use or transfer of user data for purposes unrelated to the extension's single purpose, and no use or transfer to determine creditworthiness or for lending purposes.</p>
+
+<h2>Your rights</h2>
+<p>Regulations such as the GDPR and CCPA give you rights of access, correction, deletion and portability over personal data a service holds about you. We hold none, so there is nothing to disclose, correct, export or erase on our side. The one local record described above is under your control and is removed when you uninstall the extension.</p>
+
+<h2>Changes</h2>
+<p>If this policy ever changes, the revised version will be published on this page with an updated date, and the change will be recorded in the project's <a href="https://github.com/animeshsinghweb/StateMover/blob/main/CHANGELOG.md">changelog</a>. Material changes would accompany a new extension version.</p>
+
+<h2>Contact</h2>
+<p>Questions, or something here that does not match what you observe? Open an issue at <a href="https://github.com/animeshsinghweb/StateMover/issues">github.com/animeshsinghweb/StateMover/issues</a>.</p>
+<p>The extension is open source under the <a href="license.html">MIT licence</a>. Every claim on this page can be checked against the <a href="https://github.com/animeshsinghweb/StateMover">source</a>, which is short enough to read in one sitting.</p>
+</div>
+</main>
+
+<footer class="site-footer">
+    <div class="wrap">
+        <span>State Mover &middot; MIT licensed</span>
+        <nav class="footer-links">
+            <a href="guide.html">Guide</a>
+            <a href="privacy.html">Privacy</a>
+            <a href="terms.html">Terms</a>
+            <a href="license.html">License</a>
+            <a href="https://github.com/animeshsinghweb/StateMover">GitHub</a>
+            <a href="https://github.com/animeshsinghweb/StateMover/issues">Support</a>
+        </nav>
+    </div>
+</footer>
+
+</body>
+</html>

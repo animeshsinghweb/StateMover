@@ -9,7 +9,7 @@
 Pick the keys that matter, copy them as a JSON snapshot, paste them into another
 origin. No accounts, no servers, no network calls.
 
-[Install](#install) · [How it works](#how-it-works) · [Snapshot format](#snapshot-format) · [Build](#build-from-source)
+[Website](https://animeshsinghweb.github.io/StateMover/) · [Guide](https://animeshsinghweb.github.io/StateMover/guide.html) · [Install](#install) · [Snapshot format](#snapshot-format) · [Build](#build-from-source)
 
 </div>
 
@@ -78,6 +78,9 @@ browsers keep an unpacked extension until you remove it.
 Not listed yet. Until then, build from source above, or grab a package from the
 [latest release](https://github.com/animeshsinghweb/StateMover/releases/latest).
 
+The project site has a longer [usage guide](https://animeshsinghweb.github.io/StateMover/guide.html), the
+[privacy policy](https://animeshsinghweb.github.io/StateMover/privacy.html) and the [terms](https://animeshsinghweb.github.io/StateMover/terms.html).
+
 ## How it works
 
 1. Open the tab whose storage you want to copy and click the State Mover icon.
@@ -98,7 +101,7 @@ script only ever touches the keys you selected.
 | `clipboardWrite` | Puts the snapshot on your clipboard. |
 
 There is no host permission, no background service worker, and no network
-access. Nothing leaves your machine - see [PRIVACY.md](PRIVACY.md).
+access. Nothing leaves your machine - see the [privacy policy](https://animeshsinghweb.github.io/StateMover/privacy.html).
 
 ## Snapshot format
 

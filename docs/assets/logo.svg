@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128" role="img" aria-label="State Mover">
+  <defs>
+    <linearGradient id="sm-bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#4F46E5"/>
+      <stop offset="1" stop-color="#9333EA"/>
+    </linearGradient>
+  </defs>
+  <rect width="128" height="128" rx="28" fill="url(#sm-bg)"/>
+  <g fill="none" stroke="#ffffff" stroke-linecap="round" stroke-linejoin="round" stroke-width="9" opacity=".5">
+    <path d="M36 30 H22 V98 H36"/>
+    <path d="M92 30 H106 V98 H92"/>
+  </g>
+  <g fill="none" stroke="#ffffff" stroke-linecap="round" stroke-width="11">
+    <path d="M46 52 H70"/>
+    <path d="M82 76 H58"/>
+  </g>
+  <g fill="#ffffff">
+    <path d="M66 39 L87 52 L66 65 Z"/>
+    <path d="M62 63 L41 76 L62 89 Z"/>
+  </g>
+</svg>
