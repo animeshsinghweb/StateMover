@@ -45,18 +45,33 @@ cd StateMover
 ./scripts/build.sh
 ```
 
-Then load the unpacked extension:
+That writes two ready-to-load folders, one per engine:
+
+- `dist/chromium/` - Chrome, Edge, Brave, Opera, Vivaldi
+- `dist/firefox/` - Firefox
+
+> **Load unpacked wants a folder, not a zip.** The `.zip` files next to those
+> folders are for uploading to the stores; no browser will accept one here. If
+> the file picker greys them out, that is why - select the folder instead.
 
 | Browser | Steps |
 | --- | --- |
-| Chrome / Brave / Vivaldi | `chrome://extensions` → enable **Developer mode** → **Load unpacked** → select the repo folder |
-| Edge | `edge://extensions` → enable **Developer mode** → **Load unpacked** → select the repo folder |
-| Opera | `opera://extensions` → enable **Developer mode** → **Load unpacked** → select the repo folder |
-| Firefox 142+ | `about:debugging#/runtime/this-firefox` → **Load Temporary Add-on** → select `dist/state-mover-<version>-firefox.zip` |
+| Chrome / Brave / Vivaldi | `chrome://extensions` → enable **Developer mode** → **Load unpacked** → select the **`dist/chromium`** folder |
+| Edge | `edge://extensions` → enable **Developer mode** → **Load unpacked** → select the **`dist/chromium`** folder |
+| Opera | `opera://extensions` → enable **Developer mode** → **Load unpacked** → select the **`dist/chromium`** folder |
+| Firefox 142+ | `about:debugging#/runtime/this-firefox` → **Load Temporary Add-on** → select **`dist/firefox/manifest.json`** |
 
-Chromium browsers read the repo's `manifest.json` directly, so you can skip the
-build step and point them at the folder as-is. Firefox needs the packaged zip
-because it uses `manifest.firefox.json`.
+Firefox's picker is a *file* picker rather than a folder picker, so point it at
+the `manifest.json` inside `dist/firefox/`. It also accepts
+`dist/state-mover-<version>-firefox.zip` if you prefer.
+
+Chromium browsers can also read the repo root directly - `manifest.json` sits at
+the top level - so **Load unpacked** on the clone itself works without building.
+Firefox cannot, because it needs `manifest.firefox.json` renamed into place,
+which is exactly what the build step does.
+
+Temporary add-ons in Firefox are unloaded when you close the browser. Chromium
+browsers keep an unpacked extension until you remove it.
 
 ### From a store
 
