@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "State Mover",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Copy selected localStorage and sessionStorage keys out of one page and apply them to another.",
   "homepage_url": "https://animeshsingh.in/StateMover/",
   "permissions": [

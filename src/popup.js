@@ -6,8 +6,17 @@ const api = globalThis.browser ?? globalThis.chrome;
 const MAGIC_KEY = "__localStorageTransfer__";
 const PAYLOAD_VERSION = 2;
 const ORIGIN_SELECTIONS_KEY = "stateMoverOriginSelections";
+const MIGRATED_KEY = "stateMoverLegacyMigrated";
 const LEGACY_SYNC_KEYS = ["stateMoverKeys", "stateMoverLocalKeys", "stateMoverSessionKeys"];
 const AREAS = ["local", "session"];
+
+// A page whose main thread is busy answers an injected script late or not at
+// all. Every call is bounded so the popup reports instead of hanging.
+const TIMEOUT = { collect: 4000, values: 8000, write: 8000, storage: 2500 };
+
+// Above this, building a row per key costs more than it returns. Filtering
+// still reaches everything.
+const MAX_ROWS = 400;
 
 // Pages where no extension may inject a script; injection there fails with an opaque error.
 const BLOCKED_URL = /^(chrome|edge|brave|opera|about|moz-extension|chrome-extension|view-source|devtools|file):|^https:\/\/(chromewebstore\.google\.com|chrome\.google\.com\/webstore|addons\.mozilla\.org|microsoftedge\.microsoft\.com)/;
@@ -43,18 +52,21 @@ const state = {
     filter: "",
     keys: { local: [], session: [] },
     selected: { local: new Set(), session: new Set() },
+    // Bumped on every reload so a slow reply cannot overwrite newer state.
+    generation: 0,
 };
 
 // --- Injected page functions (serialised by executeScript, so no closures) ---
 
 function pageCollectKeys() {
-    const encoder = new TextEncoder();
     const read = (store) => {
         const out = [];
-        for (let i = 0; i < store.length; i++) {
-            const name = store.key(i);
+        for (const name of Object.keys(store)) {
             const value = store.getItem(name);
-            out.push({ name, size: encoder.encode(value ?? "").length });
+            // UTF-16 code units are what the browser charges against the
+            // origin's quota, and reading .length allocates nothing - encoding
+            // every value here would copy the whole store to measure it.
+            out.push({ name, size: (value ? value.length : 0) * 2 });
         }
         return out.sort((a, b) => a.name.localeCompare(b.name));
     };
@@ -109,9 +121,40 @@ function pageWriteValues(localEntries, sessionEntries) {
 
 // --- Plumbing ---
 
-async function runInPage(func, args = []) {
-    const results = await api.scripting.executeScript({ target: { tabId: state.tabId }, func, args });
+class TimeoutError extends Error {
+    constructor(what) {
+        super(`The page did not respond within the time allowed (${what}).`);
+        this.name = "TimeoutError";
+    }
+}
+
+function withTimeout(promise, ms, what) {
+    let timer;
+    return Promise.race([
+        Promise.resolve(promise).finally(() => clearTimeout(timer)),
+        new Promise((_, reject) => {
+            timer = setTimeout(() => reject(new TimeoutError(what)), ms);
+        }),
+    ]);
+}
+
+async function runInPage(func, args = [], ms = TIMEOUT.values, what = "reading storage") {
+    const results = await withTimeout(
+        api.scripting.executeScript({ target: { tabId: state.tabId }, func, args }),
+        ms,
+        what,
+    );
     return results?.[0]?.result;
+}
+
+// Storage is normally instant, but sync storage can stall on a slow profile.
+// Nothing here is worth blocking the popup for.
+async function storageGet(area, keys, fallback = {}) {
+    try {
+        return await withTimeout(api.storage[area].get(keys), TIMEOUT.storage, `${area} storage`);
+    } catch {
+        return fallback;
+    }
 }
 
 function formatBytes(bytes) {
@@ -128,34 +171,71 @@ function toast(message, isError = false) {
     clearTimeout(toastTimer);
     toastTimer = setTimeout(() => {
         ui.toast.hidden = true;
-    }, isError ? 5000 : 2600);
+    }, isError ? 6000 : 2600);
 }
 
-function fatal(message) {
-    ui.error.textContent = message;
+// A blocking problem, with a way out of it rather than a dead popup.
+function fatal(message, action) {
+    ui.error.textContent = "";
+
+    const text = document.createElement("p");
+    text.className = "banner-text";
+    text.textContent = message;
+    ui.error.append(text);
+
+    if (action) {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "banner-btn";
+        button.textContent = action.label;
+        button.addEventListener("click", () => {
+            button.disabled = true;
+            Promise.resolve(action.run()).catch(() => {
+                button.disabled = false;
+            });
+        });
+        ui.error.append(button);
+    }
+
     ui.error.hidden = false;
     ui.workspace.hidden = true;
 }
 
+function clearFatal() {
+    ui.error.hidden = true;
+    ui.error.textContent = "";
+    ui.workspace.hidden = false;
+}
+
+function setListMessage(message) {
+    ui.list.textContent = "";
+    const p = document.createElement("p");
+    p.className = "empty";
+    p.textContent = message;
+    ui.list.append(p);
+}
+
 // --- Selection persistence (per origin, with the pre-1.2 global list as the fallback) ---
 
-async function loadDefaults() {
-    let synced = {};
-    try {
-        // storage.sync is unavailable in some Firefox configurations; the migration is optional.
-        synced = await api.storage.sync.get(LEGACY_SYNC_KEYS);
-    } catch {
-        synced = {};
-    }
-    return {
+// Reads sync storage at most once ever, then records the result locally. Sync
+// storage is the slowest thing the popup can touch, and this only ever mattered
+// for upgrades from 1.1.
+async function legacyDefaults() {
+    const local = await storageGet("local", [MIGRATED_KEY]);
+    if (local[MIGRATED_KEY]) return local[MIGRATED_KEY];
+
+    const synced = await storageGet("sync", LEGACY_SYNC_KEYS);
+    const defaults = {
         local: synced.stateMoverLocalKeys ?? synced.stateMoverKeys ?? [],
         session: synced.stateMoverSessionKeys ?? [],
     };
+    api.storage.local.set({ [MIGRATED_KEY]: defaults }).catch(() => {});
+    return defaults;
 }
 
 async function loadSelection() {
-    const stored = await api.storage.local.get(ORIGIN_SELECTIONS_KEY);
-    const saved = stored[ORIGIN_SELECTIONS_KEY]?.[state.origin] ?? (await loadDefaults());
+    const stored = await storageGet("local", ORIGIN_SELECTIONS_KEY);
+    const saved = stored[ORIGIN_SELECTIONS_KEY]?.[state.origin] ?? (await legacyDefaults());
     for (const area of AREAS) state.selected[area] = new Set(saved[area] ?? []);
 }
 
@@ -163,35 +243,39 @@ let saveTimer;
 function saveSelection() {
     clearTimeout(saveTimer);
     saveTimer = setTimeout(async () => {
-        const stored = await api.storage.local.get(ORIGIN_SELECTIONS_KEY);
+        const stored = await storageGet("local", ORIGIN_SELECTIONS_KEY);
         const map = stored[ORIGIN_SELECTIONS_KEY] ?? {};
         map[state.origin] = { local: [...state.selected.local], session: [...state.selected.session] };
-        await api.storage.local.set({ [ORIGIN_SELECTIONS_KEY]: map });
+        api.storage.local.set({ [ORIGIN_SELECTIONS_KEY]: map }).catch(() => {});
     }, 250);
 }
 
 // --- Rendering ---
 
-function renderList() {
+function visibleKeys() {
     const needle = state.filter.toLowerCase();
-    const rows = state.keys[state.area].filter((k) => !needle || k.name.toLowerCase().includes(needle));
+    const all = state.keys[state.area];
+    return needle ? all.filter((k) => k.name.toLowerCase().includes(needle)) : all;
+}
 
+function renderList() {
+    const rows = visibleKeys();
     ui.list.textContent = "";
 
     if (!rows.length) {
-        const empty = document.createElement("p");
-        empty.className = "empty";
-        empty.textContent = state.keys[state.area].length
-            ? "No keys match that filter."
-            : `No ${state.area}Storage keys on this page.`;
-        ui.list.append(empty);
+        setListMessage(
+            state.keys[state.area].length
+                ? "No keys match that filter."
+                : `No ${state.area}Storage keys on this page.`,
+        );
         return;
     }
 
     const frag = document.createDocumentFragment();
-    for (const { name, size } of rows) {
+    for (const { name, size } of rows.slice(0, MAX_ROWS)) {
         const row = document.createElement("div");
         row.className = "key-row";
+        row.dataset.key = name;
 
         const head = document.createElement("div");
         head.className = "key-head";
@@ -200,12 +284,7 @@ function renderList() {
         box.type = "checkbox";
         box.checked = state.selected[state.area].has(name);
         box.id = `key-${state.area}-${name}`;
-        box.addEventListener("change", () => {
-            const set = state.selected[state.area];
-            box.checked ? set.add(name) : set.delete(name);
-            saveSelection();
-            renderSummary();
-        });
+        box.dataset.role = "select";
 
         const label = document.createElement("label");
         label.className = "key-name";
@@ -220,17 +299,45 @@ function renderList() {
         const peek = document.createElement("button");
         peek.type = "button";
         peek.className = "key-peek";
+        peek.dataset.role = "peek";
         peek.textContent = "▶";
         peek.setAttribute("aria-expanded", "false");
         peek.setAttribute("aria-label", `Show value of ${name}`);
-        peek.addEventListener("click", () => togglePeek(row, peek, name));
 
         head.append(box, label, sizeEl, peek);
         row.append(head);
         frag.append(row);
     }
     ui.list.append(frag);
+
+    if (rows.length > MAX_ROWS) {
+        const note = document.createElement("p");
+        note.className = "empty";
+        note.textContent = `Showing the first ${MAX_ROWS} of ${rows.length}. Filter to narrow the list.`;
+        ui.list.append(note);
+    }
 }
+
+// One listener for the whole list rather than four per row, so re-rendering on
+// every filter keystroke stays cheap.
+ui.list.addEventListener("change", (e) => {
+    const box = e.target;
+    if (box.dataset?.role !== "select") return;
+    const name = box.closest(".key-row")?.dataset.key;
+    if (!name) return;
+    const set = state.selected[state.area];
+    if (box.checked) set.add(name);
+    else set.delete(name);
+    saveSelection();
+    renderSummary();
+});
+
+ui.list.addEventListener("click", (e) => {
+    const peek = e.target.closest?.("[data-role='peek']");
+    if (!peek) return;
+    const row = peek.closest(".key-row");
+    if (row) togglePeek(row, peek, row.dataset.key);
+});
 
 async function togglePeek(row, peek, name) {
     const existing = row.querySelector(".key-value");
@@ -248,10 +355,10 @@ async function togglePeek(row, peek, name) {
 
     try {
         const args = state.area === "local" ? [[name], []] : [[], [name]];
-        const values = await runInPage(pageReadValues, args);
+        const values = await runInPage(pageReadValues, args, TIMEOUT.values, "reading a value");
         pre.textContent = prettify(values?.[state.area]?.[name] ?? "(not readable)");
-    } catch {
-        pre.textContent = "(could not read this key)";
+    } catch (e) {
+        pre.textContent = e instanceof TimeoutError ? "(the page did not respond)" : "(could not read this key)";
     }
 }
 
@@ -306,10 +413,12 @@ function setArea(area) {
 // --- Export / import ---
 
 async function buildSnapshot() {
-    const values = await runInPage(pageReadValues, [
-        [...state.selected.local],
-        [...state.selected.session],
-    ]);
+    const values = await runInPage(
+        pageReadValues,
+        [[...state.selected.local], [...state.selected.session]],
+        TIMEOUT.values,
+        "reading the selected keys",
+    );
     return JSON.stringify({
         [MAGIC_KEY]: true,
         version: PAYLOAD_VERSION,
@@ -321,16 +430,20 @@ async function buildSnapshot() {
 }
 
 async function copySnapshot() {
+    ui.copy.disabled = true;
     try {
         const json = await buildSnapshot();
         await navigator.clipboard.writeText(json);
         toast(`Copied ${formatBytes(new TextEncoder().encode(json).length)} to the clipboard.`);
     } catch (e) {
-        toast(`Export failed: ${e.message}`, true);
+        toast(`Export failed. ${e.message}`, true);
+    } finally {
+        renderSummary();
     }
 }
 
 async function downloadSnapshot() {
+    ui.download.disabled = true;
     try {
         const json = await buildSnapshot();
         const host = state.origin.replace(/^https?:\/\//, "").replace(/[^a-z0-9.-]/gi, "-");
@@ -343,7 +456,9 @@ async function downloadSnapshot() {
         setTimeout(() => URL.revokeObjectURL(url), 10_000);
         toast("Snapshot downloaded.");
     } catch (e) {
-        toast(`Download failed: ${e.message}`, true);
+        toast(`Download failed. ${e.message}`, true);
+    } finally {
+        renderSummary();
     }
 }
 
@@ -383,7 +498,12 @@ async function applySnapshot() {
     ui.importBtn.disabled = true;
     try {
         const { local, session } = parseSnapshot(text);
-        const result = await runInPage(pageWriteValues, [Object.entries(local), Object.entries(session)]);
+        const result = await runInPage(
+            pageWriteValues,
+            [Object.entries(local), Object.entries(session)],
+            TIMEOUT.write,
+            "writing the snapshot",
+        );
         if (result?.error) throw new Error(result.error);
 
         const written = (result?.local ?? 0) + (result?.session ?? 0);
@@ -405,11 +525,53 @@ async function applySnapshot() {
 // --- Boot ---
 
 async function refreshKeys() {
-    const collected = await runInPage(pageCollectKeys);
-    if (!collected) throw new Error("The page did not respond.");
+    const generation = ++state.generation;
+    const collected = await runInPage(pageCollectKeys, [], TIMEOUT.collect, "listing keys");
+    if (generation !== state.generation) return; // superseded by a newer read
+    if (!collected) throw new Error("The page returned nothing.");
+
     state.keys.local = collected.local;
     state.keys.session = collected.session;
     renderCounts();
+    renderList();
+    renderSummary();
+}
+
+// Chromium unloads background tabs when memory is tight, which is exactly when
+// a lot of tabs are open. An unloaded tab has no renderer to inject into.
+function tabIsUnloaded(tab) {
+    return tab.discarded === true || tab.status === "unloaded";
+}
+
+function failureMessage(error) {
+    if (error instanceof TimeoutError) {
+        return "This page is not responding. It may be busy or still loading. Try again in a moment, or reload the tab.";
+    }
+    const detail = String(error?.message ?? error);
+    if (/cannot be scripted|cannot access|Missing host permission|Extension manifest/i.test(detail)) {
+        return "This page does not allow extensions to read it.";
+    }
+    if (/No tab with id|no longer exists|Frame with ID/i.test(detail)) {
+        return "That tab is gone. Open the popup again on a live tab.";
+    }
+    return `Could not read this page's storage. ${detail}`;
+}
+
+async function loadPage() {
+    clearFatal();
+    setListMessage("Reading this page’s storage…");
+
+    // The saved selection and the page read do not depend on each other.
+    const [selectionResult, keysResult] = await Promise.allSettled([loadSelection(), refreshKeys()]);
+
+    if (keysResult.status === "rejected") {
+        fatal(failureMessage(keysResult.reason), { label: "Try again", run: loadPage });
+        return;
+    }
+    if (selectionResult.status === "rejected") {
+        toast("Could not restore your saved selection.", true);
+    }
+    // refreshKeys rendered before the selection landed, so paint it again.
     renderList();
     renderSummary();
 }
@@ -418,7 +580,18 @@ async function init() {
     ui.copy.disabled = true;
     ui.download.disabled = true;
 
-    const [tab] = await api.tabs.query({ active: true, currentWindow: true });
+    let tab;
+    try {
+        [tab] = await withTimeout(
+            api.tabs.query({ active: true, currentWindow: true }),
+            TIMEOUT.storage,
+            "finding the active tab",
+        );
+    } catch {
+        fatal("Could not read the active tab.", { label: "Try again", run: init });
+        return;
+    }
+
     if (!tab?.id) {
         fatal("No active tab to read.");
         return;
@@ -439,12 +612,20 @@ async function init() {
     ui.origin.textContent = state.origin.replace(/^https?:\/\//, "");
     ui.origin.title = state.origin;
 
-    try {
-        await loadSelection();
-        await refreshKeys();
-    } catch (e) {
-        fatal(`Could not read this page's storage. ${e.message}`);
+    if (tabIsUnloaded(tab)) {
+        fatal("The browser unloaded this tab to free memory, so there is nothing to read yet. Reload it and State Mover will pick it up.", {
+            label: "Reload the tab",
+            run: async () => {
+                await api.tabs.reload(state.tabId);
+                // Give the renderer a moment to come back before reading it.
+                await new Promise((r) => setTimeout(r, 600));
+                await init();
+            },
+        });
+        return;
     }
+
+    await loadPage();
 }
 
 ui.tabLocal.addEventListener("click", () => setArea("local"));
@@ -456,14 +637,11 @@ ui.filter.addEventListener("input", () => {
     filterTimer = setTimeout(() => {
         state.filter = ui.filter.value.trim();
         renderList();
-    }, 100);
+    }, 120);
 });
 
 ui.selectAll.addEventListener("click", () => {
-    const needle = state.filter.toLowerCase();
-    for (const { name } of state.keys[state.area]) {
-        if (!needle || name.toLowerCase().includes(needle)) state.selected[state.area].add(name);
-    }
+    for (const { name } of visibleKeys()) state.selected[state.area].add(name);
     saveSelection();
     renderList();
     renderSummary();
@@ -484,9 +662,20 @@ ui.loadFile.addEventListener("click", () => ui.fileInput.click());
 ui.fileInput.addEventListener("change", async () => {
     const file = ui.fileInput.files?.[0];
     if (!file) return;
-    ui.importData.value = await file.text();
-    ui.fileInput.value = "";
-    toast(`Loaded ${file.name}.`);
+    try {
+        ui.importData.value = await file.text();
+        toast(`Loaded ${file.name}.`);
+    } catch {
+        toast("Could not read that file.", true);
+    } finally {
+        ui.fileInput.value = "";
+    }
 });
 
-init();
+// Nothing below should ever leave the popup blank.
+window.addEventListener("unhandledrejection", (e) => {
+    console.error("State Mover", e.reason);
+    toast(failureMessage(e.reason), true);
+});
+
+init().catch((e) => fatal(failureMessage(e), { label: "Try again", run: init }));

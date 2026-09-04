@@ -94,6 +94,24 @@ body {
     color: var(--danger-text);
 }
 
+.banner-text { margin: 0; }
+
+.banner-btn {
+    margin-top: 9px;
+    padding: 6px 12px;
+    border: 1px solid currentColor;
+    border-radius: 6px;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 550;
+    cursor: pointer;
+}
+
+.banner-btn:hover:not(:disabled) { background: rgb(0 0 0 / 0.06); }
+.banner-btn:disabled { opacity: 0.55; cursor: progress; }
+
 /* --- Tabs --- */
 
 .tabs {

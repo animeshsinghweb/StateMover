@@ -101,7 +101,7 @@ the file picker greys them out, that is the reason.</p>
 <section id="picking">
 <h2>3. Picking keys</h2>
 
-<p>Tick the keys you want. The list is sorted alphabetically and shows each value's size in bytes, so a heavyweight key is obvious at a glance.</p>
+<p>Tick the keys you want. The list is sorted alphabetically and shows each value's size, so a heavyweight key is obvious at a glance. Sizes are counted the way the browser counts them against the origin's storage quota, which is two bytes per character, so they line up with the 5 MB ceiling a page actually has.</p>
 
 <ul>
     <li><strong>Filter</strong> narrows the list as you type. Handy on pages with a hundred keys, which is more common than you would think.</li>
@@ -185,6 +185,12 @@ present get overwritten.</p>
 
 <h3>Nothing happens on a page you control</h3>
 <p>A few sites block storage access from injected scripts through their content security policy or a sandboxed context. State Mover reports what it can, but it cannot get around a page that refuses to hand over its storage.</p>
+
+<h3>"This page is not responding"</h3>
+<p>State Mover reads storage by running a snippet inside the page, so a page whose main thread is tied up cannot answer until it frees up. Rather than sit there, the popup gives up after a few seconds and offers <strong>Try again</strong>. Heavy pages under load, and pages still loading, are the usual causes.</p>
+
+<h3>"The browser unloaded this tab to free memory"</h3>
+<p>When a lot of tabs are open, Chromium discards the ones you are not looking at to reclaim memory. A discarded tab has no page left to read, so there is nothing for State Mover to inject into. The popup offers <strong>Reload the tab</strong>, which brings the page back and reads it once it is up.</p>
 </section>
 
 <section id="safety">

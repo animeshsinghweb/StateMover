@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.2.1
+
+**Fixes the popup hanging or coming up blank.**
+
+- Every call into the page is now bounded by a timeout. A page whose main thread is busy used to leave the popup stuck on "Reading page..." with no way out; it now reports what happened after a few seconds and offers **Try again**.
+- Detects a tab the browser discarded to reclaim memory, which is what happens when a lot of tabs are open, and offers **Reload the tab** instead of failing against a page that is no longer there.
+- The saved selection and the page read now run in parallel, and neither can block the other. Sync storage, the slowest thing the popup touched, is no longer on the startup path at all: the 1.1 key migration runs once and is cached locally.
+- Failures are reported with the reason and a way to recover, rather than a silent or blank popup. Nothing can leave the popup empty any more.
+- Listing keys is around seven times faster and allocates nothing extra: sizes are read from string length rather than by encoding every value, which used to copy the whole store just to measure it. Sizes now match the browser's own quota accounting.
+- One delegated listener for the key list instead of four per row, so filtering a long list no longer churns hundreds of closures per keystroke.
+- Very long key lists render the first 400 rows with a note, instead of building thousands of DOM nodes.
+
 ## 1.2.0
 
 **Rewritten popup.**
